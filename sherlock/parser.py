@@ -81,60 +81,6 @@ def parse_anthropic_request(body: dict) -> dict:
     return result
 
 
-def parse_gemini_request(body: dict) -> dict:
-    """Parse Gemini API request body.
-
-    Returns dict with:
-        - messages: list of message dicts with role and content
-        - model: model name (extracted from URL typically)
-        - system: system instruction if present
-        - total_text: concatenated text for token counting
-    """
-    result = {
-        "provider": "gemini",
-        "messages": [],
-        "model": "gemini",
-        "system": None,
-        "total_text": "",
-    }
-
-    texts = []
-
-    # Extract system instruction
-    system_instruction = body.get("system_instruction")
-    if system_instruction:
-        parts = system_instruction.get("parts", [])
-        system_texts = []
-        for part in parts:
-            if isinstance(part, dict) and "text" in part:
-                system_texts.append(part["text"])
-            elif isinstance(part, str):
-                system_texts.append(part)
-        if system_texts:
-            system_text = "\n".join(system_texts)
-            result["system"] = system_text
-            texts.append(system_text)
-            result["messages"].append({"role": "system", "content": system_text})
-
-    # Extract contents
-    contents = body.get("contents", [])
-    for content_item in contents:
-        role = content_item.get("role", "user")
-        parts = content_item.get("parts", [])
-        part_texts = []
-        for part in parts:
-            if isinstance(part, dict) and "text" in part:
-                part_texts.append(part["text"])
-            elif isinstance(part, str):
-                part_texts.append(part)
-        content_text = "\n".join(part_texts)
-        result["messages"].append({"role": role, "content": content_text})
-        texts.append(content_text)
-
-    result["total_text"] = "\n".join(texts)
-    return result
-
-
 def parse_request(host: str, body: bytes) -> dict | None:
     """Parse an intercepted request based on the host.
 
@@ -147,8 +93,6 @@ def parse_request(host: str, body: bytes) -> dict | None:
 
     if "api.anthropic.com" in host:
         return parse_anthropic_request(body_dict)
-    elif "generativelanguage.googleapis.com" in host:
-        return parse_gemini_request(body_dict)
 
     return None
 

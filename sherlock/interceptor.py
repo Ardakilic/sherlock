@@ -49,6 +49,12 @@ class SherlockAddon:
         # Get last user message for preview
         last_user_message = extract_last_user_message(parsed["messages"])
 
+        # Parse raw body as JSON for storage
+        try:
+            raw_body = json.loads(body)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            raw_body = None
+
         # Build event data
         event = {
             "timestamp": datetime.now().isoformat(),
@@ -58,6 +64,7 @@ class SherlockAddon:
             "last_user_message": last_user_message,
             "messages": parsed["messages"],
             "system": parsed["system"],
+            "raw_body": raw_body,
         }
 
         # Write to IPC file

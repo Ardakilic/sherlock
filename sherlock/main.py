@@ -13,6 +13,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+from prompt_toolkit import prompt as pt_prompt
+
 from rich.console import Console
 
 from sherlock.certs import ensure_certs_ready
@@ -54,14 +56,15 @@ def check_dependencies() -> bool:
     return True
 
 
-def save_prompt_to_file(event: dict) -> None:
-    """Save a prompt to a markdown file."""
-    PROMPTS_DIR.mkdir(parents=True, exist_ok=True)
+def save_prompt_to_file(event: dict, prompts_dir: Path) -> None:
+    """Save a prompt to markdown and raw JSON files."""
+    prompts_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.fromisoformat(event["timestamp"])
-    filename = timestamp.strftime(f"%Y-%m-%d_%H-%M-%S_{event['provider']}.md")
-    filepath = PROMPTS_DIR / filename
+    base_filename = timestamp.strftime(f"%Y-%m-%d_%H-%M-%S_{event['provider']}")
 
+    # Save markdown file (human-readable)
+    md_filepath = prompts_dir / f"{base_filename}.md"
     lines = [
         f"# Prompt - {timestamp.strftime('%Y-%m-%d %H:%M:%S')}",
         f"**Provider:** {event['provider'].capitalize()}",
@@ -78,7 +81,13 @@ def save_prompt_to_file(event: dict) -> None:
         lines.append(content)
         lines.append("")
 
-    filepath.write_text("\n".join(lines))
+    md_filepath.write_text("\n".join(lines))
+
+    # Save raw JSON file (original request body)
+    raw_body = event.get("raw_body")
+    if raw_body is not None:
+        json_filepath = prompts_dir / f"{base_filename}.json"
+        json_filepath.write_text(json.dumps(raw_body, indent=2))
 
 
 def load_history() -> list[dict]:
@@ -101,7 +110,6 @@ def start_sherlock(
     port: int = DEFAULT_PROXY_PORT,
     token_limit: int = DEFAULT_TOKEN_LIMIT,
     persist: bool = False,
-    save_prompts: bool = False,
     skip_cert_check: bool = False,
 ) -> None:
     """Start the Sherlock proxy and dashboard.
@@ -110,9 +118,13 @@ def start_sherlock(
         port: Proxy port number
         token_limit: Maximum token limit for fuel gauge
         persist: Whether to persist token history
-        save_prompts: Whether to save prompts to files
         skip_cert_check: Whether to skip certificate verification
     """
+    # Ask user for prompts directory (pre-filled with default)
+    console.print("[cyan]Directory to save prompts:[/cyan]")
+    prompts_dir_input = pt_prompt("> ", default=str(PROMPTS_DIR))
+    prompts_dir = Path(prompts_dir_input).expanduser().resolve()
+
     # Check dependencies first
     if not check_dependencies():
         sys.exit(1)
@@ -194,10 +206,10 @@ def start_sherlock(
         sys.exit(1)
 
     console.print(f"[green]Proxy running on http://127.0.0.1:{port}[/green]")
+    console.print(f"[green]Saving prompts to {prompts_dir}[/green]")
     console.print()
     console.print("[yellow]To intercept traffic, in another terminal run:[/yellow]")
     console.print("  [cyan]sherlock claude[/cyan]      # for Claude Code")
-    console.print("  [cyan]sherlock gemini[/cyan]      # for Gemini CLI")
     console.print()
     console.print("[dim]Press Ctrl+C to stop[/dim]")
     console.print()
@@ -233,9 +245,8 @@ def start_sherlock(
                             events.append(event)
                             all_events.append(event)
 
-                            # Save prompt if enabled
-                            if save_prompts:
-                                save_prompt_to_file(event)
+                            # Save prompt to file
+                            save_prompt_to_file(event, prompts_dir)
                         except json.JSONDecodeError:
                             pass
                 file_pos = f.tell()

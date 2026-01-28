@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from rich.console import Console, Group
+from rich.console import Console
 from rich.layout import Layout
 from rich.live import Live
 from rich.panel import Panel

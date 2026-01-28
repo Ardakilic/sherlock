@@ -152,34 +152,6 @@ def print_install_instructions() -> None:
     console.print("After installation, run [cyan]sherlock check-certs[/cyan] to verify.")
 
 
-def print_env_vars(port: int = 8080) -> None:
-    """Print environment variables for proxy configuration."""
-    proxy_url = f"http://127.0.0.1:{port}"
-
-    shell = Path(environ.get("SHELL", "/bin/bash")).name if (environ := __import__("os").environ) else "bash"
-
-    console.print()
-    console.print("[bold]Set these environment variables to route traffic through Sherlock:[/bold]")
-    console.print()
-
-    if shell in ("bash", "zsh", "sh"):
-        console.print(f'export HTTP_PROXY="{proxy_url}"')
-        console.print(f'export HTTPS_PROXY="{proxy_url}"')
-        console.print(f'export http_proxy="{proxy_url}"')
-        console.print(f'export https_proxy="{proxy_url}"')
-    elif shell == "fish":
-        console.print(f'set -x HTTP_PROXY "{proxy_url}"')
-        console.print(f'set -x HTTPS_PROXY "{proxy_url}"')
-        console.print(f'set -x http_proxy "{proxy_url}"')
-        console.print(f'set -x https_proxy "{proxy_url}"')
-    else:
-        console.print(f'HTTP_PROXY="{proxy_url}"')
-        console.print(f'HTTPS_PROXY="{proxy_url}"')
-
-    console.print()
-    console.print("[dim]Or use: eval $(sherlock env)[/dim]")
-
-
 def output_env_vars(port: int = 8080) -> None:
     """Output shell commands for setting proxy environment variables."""
     import os

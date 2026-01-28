@@ -4,9 +4,8 @@ from pathlib import Path
 
 # API endpoints to intercept
 ANTHROPIC_HOST = "api.anthropic.com"
-GEMINI_HOST = "generativelanguage.googleapis.com"
 
-INTERCEPTED_HOSTS = [ANTHROPIC_HOST, GEMINI_HOST]
+INTERCEPTED_HOSTS = [ANTHROPIC_HOST]
 
 # Default token limits
 DEFAULT_TOKEN_LIMIT = 200_000

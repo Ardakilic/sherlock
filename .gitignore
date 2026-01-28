@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+*.egg
+dist/
+build/
+eggs/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# mitmproxy
+.mitmproxy/
+
+# Sherlock output (prompt logs in project root from testing)
+*.anthropic.json
+*.anthropic.md
+*_anthropic.json
+*_anthropic.md
+
+# OS
+.DS_Store
+Thumbs.db

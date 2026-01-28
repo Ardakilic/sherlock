@@ -199,12 +199,11 @@ def main(ctx):
 @click.option("--port", "-p", default=DEFAULT_PROXY_PORT, help="Proxy port number")
 @click.option("--limit", "-l", default=DEFAULT_TOKEN_LIMIT, help="Token limit for fuel gauge")
 @click.option("--persist", is_flag=True, help="Save token history to ~/.sherlock/history.json")
-@click.option("--save-prompts", is_flag=True, help="Save prompts to ~/.sherlock/prompts/")
 @click.option("--skip-cert-check", is_flag=True, help="Skip certificate verification")
-def start(port: int, limit: int, persist: bool, save_prompts: bool, skip_cert_check: bool):
+def start(port: int, limit: int, persist: bool, skip_cert_check: bool):
     """Start the proxy and dashboard."""
     from sherlock.main import start_sherlock
-    start_sherlock(port=port, token_limit=limit, persist=persist, save_prompts=save_prompts, skip_cert_check=skip_cert_check)
+    start_sherlock(port=port, token_limit=limit, persist=persist, skip_cert_check=skip_cert_check)
 
 
 @main.command("check-certs")
@@ -255,20 +254,6 @@ def claude(port: int, args: tuple):
     Example: sherlock claude --help
     """
     run_with_proxy("claude", port, args, is_node_app=True)
-
-
-@main.command()
-@click.option("--port", "-p", default=DEFAULT_PROXY_PORT, help="Proxy port number")
-@click.argument("args", nargs=-1)
-def gemini(port: int, args: tuple):
-    """Run Gemini CLI with proxy configured.
-
-    Start sherlock in another terminal first, then use this command.
-    Any additional arguments are passed to gemini.
-
-    Example: sherlock gemini --help
-    """
-    run_with_proxy("gemini", port, args, is_node_app=True)
 
 
 if __name__ == "__main__":
